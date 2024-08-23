@@ -1,0 +1,25 @@
+// Circuito 1
+function i = i(t)
+
+% Parámetros de la señal de corriente
+A = 30;                 % Amplitud del término sinusoidal
+omega = 5;              % Frecuencia angular (radianes/segundo)
+fase = (-pi) / 4;    %Fase en radianes
+
+% Ecuación de la señal de corriente
+i = A * cos(omega * t + fase);
+end
+
+// Circuito 2
+function i = i(t)
+
+% Parámetros de la señal de corriente
+A = 20;                 % Amplitud del término sinusoidal
+tau = -2;               % Término de decaimiento exponencial
+omega = 5;              % Frecuencia angular (radianes/segundo)
+fase = (2 * pi) / 3;    %Fase en radianes
+offset = 40;            % Desplazamiento (offset) de la señal
+
+% Ecuación de la señal de corriente
+i = A * exp(tau * t) * sin(omega * t + fase) + offset;
+end
