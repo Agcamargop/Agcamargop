@@ -1,25 +1,83 @@
-// Circuito 1
-function i = i(t)
+// CircuitoS
+% Parámetros dados
+Z = 0.04 + 1j*0.06; % Impedancia de la línea en pu
+Y = 1j*0.1025;      % Susceptancia capacitiva total en pu
+V2 = 1.025;         % Voltaje en el receptor en pu
+S_load = 0.75 + 1j*0.25; % Potencia compleja de la carga en pu
 
-% Parámetros de la señal de corriente
-A = 30;                 % Amplitud del término sinusoidal
-omega = 5;              % Frecuencia angular (radianes/segundo)
-fase = (-pi) / 4;    %Fase en radianes
+% Corriente de carga (I2)
+I2 = conj(S_load / V2); % I2 = S*/V
 
-% Ecuación de la señal de corriente
-i = A * cos(omega * t + fase);
-end
+% Modelo tipo π: Cálculo de parámetros de transmisión
+A_pi = 1 + (Z * Y / 2);
+B_pi = Z;
+C_pi = Y + (Y^2 * Z / 4);
+D_pi = A_pi; % Para líneas simétricas
 
-// Circuito 2
-function i = i(t)
+% Modelo tipo T: Cálculo de parámetros de transmisión
+A_T = 1 + Z * (Y / 2);
+B_T = Z / (1 + Z * (Y / 4));
+C_T = Y / (1 + Z * (Y / 4));
+D_T = A_T; % Para líneas simétricas
 
-% Parámetros de la señal de corriente
-A = 20;                 % Amplitud del término sinusoidal
-tau = -2;               % Término de decaimiento exponencial
-omega = 5;              % Frecuencia angular (radianes/segundo)
-fase = (2 * pi) / 3;    %Fase en radianes
-offset = 40;            % Desplazamiento (offset) de la señal
+% Calcular V1 e I1 para cada modelo
+% Modelo π
+V1_pi = A_pi * V2 + B_pi * I2;
+I1_pi = C_pi * V2 + D_pi * I2;
 
-% Ecuación de la señal de corriente
-i = A * exp(tau * t) * sin(omega * t + fase) + offset;
+% Modelo T
+V1_T = A_T * V2 + B_T * I2;
+I1_T = C_T * V2 + D_T * I2;
+
+% Factor de potencia
+FP_pi = cos(angle(V1_pi) - angle(I1_pi));
+FP_T = cos(angle(V1_T) - angle(I1_T));
+
+% Pérdidas de potencia activa y eficiencia
+P_loss_pi = real(V1_pi * conj(I1_pi)) - real(V2 * conj(I2));
+P_loss_T = real(V1_T * conj(I1_T)) - real(V2 * conj(I2));
+
+P_in_pi = real(V1_pi * conj(I1_pi));
+P_in_T = real(V1_T * conj(I1_T));
+
+Efficiency_pi = (real(S_load) / P_in_pi) * 100;
+Efficiency_T = (real(S_load) / P_in_T) * 100;
+
+% Regulación de tensión
+Regulation_pi = ((abs(V1_pi) - abs(V2)) / abs(V2)) * 100;
+Regulation_T = ((abs(V1_T) - abs(V2)) / abs(V2)) * 100;
+
+% Resultados
+fprintf('--- Resultados Modelo Tipo π ---\n');
+fprintf('A = %.4f + %.4fj\n', real(A_pi), imag(A_pi));
+fprintf('B = %.4f + %.4fj\n', real(B_pi), imag(B_pi));
+fprintf('C = %.4f + %.4fj\n', real(C_pi), imag(C_pi));
+fprintf('D = %.4f + %.4fj\n', real(D_pi), imag(D_pi));
+fprintf('V1 = %.4f ∠ %.2f° pu\n', abs(V1_pi), angle(V1_pi)*180/pi);
+fprintf('I1 = %.4f ∠ %.2f° pu\n', abs(I1_pi), angle(I1_pi)*180/pi);
+fprintf('FP = %.2f\n', FP_pi);
+fprintf('Pérdidas de potencia activa: %.4f pu\n', P_loss_pi);
+fprintf('Eficiencia: %.2f%%\n', Efficiency_pi);
+fprintf('Regulación de tensión: %.2f%%\n', Regulation_pi);
+
+fprintf('\n--- Resultados Modelo Tipo T ---\n');
+fprintf('A = %.4f + %.4fj\n', real(A_T), imag(A_T));
+fprintf('B = %.4f + %.4fj\n', real(B_T), imag(B_T));
+fprintf('C = %.4f + %.4fj\n', real(C_T), imag(C_T));
+fprintf('D = %.4f + %.4fj\n', real(D_T), imag(D_T));
+fprintf('V1 = %.4f ∠ %.2f° pu\n', abs(V1_T), angle(V1_T)*180/pi);
+fprintf('I1 = %.4f ∠ %.2f° pu\n', abs(I1_T), angle(I1_T)*180/pi);
+fprintf('FP = %.2f\n', FP_T);
+fprintf('Pérdidas de potencia activa: %.4f pu\n', P_loss_T);
+fprintf('Eficiencia: %.2f%%\n', Efficiency_T);
+fprintf('Regulación de tensión: %.2f%%\n', Regulation_T);
+
+% Impacto de no considerar el efecto capacitivo (Y = 0)
+Y = 0; % Sin susceptancia capacitiva
+A_noY = 1 + (Z * Y / 2);
+B_noY = Z;
+C_noY = Y + (Y^2 * Z / 4);
+D_noY = A_noY;
+
+% Parámetros de transmisión, pérdidas, y regulación sin Y 
 end
